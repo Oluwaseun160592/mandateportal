@@ -414,30 +414,6 @@ export default function MandatePortal() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <div className="inline-flex bg-slate-200 p-1 rounded-lg">
-            <button
-              type="button"
-              onClick={() => setView('client')}
-              className={`px-3 py-1.5 rounded-md text-xs font-bold cursor-pointer ${
-                view === 'client' ? 'bg-white text-blue-700 shadow-sm' : 'text-slate-600'
-              }`}
-            >
-              Client Portal
-            </button>
-            <button
-              type="button"
-              onClick={() => (isAdminAuth ? setView('admin') : setShowLoginModal(true))}
-              className={`px-3 py-1.5 rounded-md text-xs font-bold cursor-pointer inline-flex items-center gap-1.5 ${
-                view === 'admin' ? 'bg-white text-blue-700 shadow-sm' : 'text-slate-600'
-              }`}
-            >
-              Admin Dashboard
-              <span className="bg-amber-600 text-white text-[10px] px-1.5 py-0.5 rounded-full">
-                {pendingCount}
-              </span>
-            </button>
-          </div>
-
           <button
             type="button"
             onClick={exportExcel}
