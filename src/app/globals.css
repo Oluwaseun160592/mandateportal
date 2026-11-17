@@ -1,0 +1,35 @@
+@import "tailwindcss";
+
+body {
+  background: linear-gradient(135deg, #78350f 0%, #b45309 35%, #d97706 70%, #fcd34d 100%);
+  color: #0f172a;
+  min-height: 100vh;
+  position: relative;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: url("/logo.png");
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: 460px auto;
+  opacity: 0.05;
+  pointer-events: none;
+  z-index: 0;
+}
+
+@media print {
+  body {
+    background: #fff !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-clean {
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+  }
+}

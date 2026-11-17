@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NGX Stockbroking Mandate Form — Sales &amp; Purchase</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <!-- Top Bar (hidden on print) -->
+    <header class="topbar no-print">
+      <div class="brand">
+        <img src="logo.png" alt="Regency Assets Management Limited Logo" class="brand-logo" />
+        <div>
+          <h1>Regency Assets Management Limited</h1>
+          <p class="subtitle">NGX Stockbroking Mandate Form — Sales &amp; Purchase with Automated SEC, CSCS, NGX &amp; VAT Deductions</p>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <div class="view-switcher" role="tablist">
+          <button type="button" class="switch-btn active" id="btnViewClient">Client Portal</button>
+          <button type="button" class="switch-btn" id="btnViewAdmin">
+            Admin Dashboard <span class="badge-count" id="pendingBadge">0</span>
+          </button>
+        </div>
+        <button type="button" class="btn btn-secondary" id="btnResetForm">Clear Form</button>
+        <button type="button" class="btn btn-secondary" id="btnExportCsv">Export CSV</button>
+        <button type="button" class="btn btn-secondary" id="btnExportExcel">Export Excel</button>
+        <button type="button" class="btn btn-primary" id="btnPrint">Print / Save PDF</button>
+      </div>
+    </header>
+
+    <!-- ==================== CLIENT PORTAL VIEW ==================== -->
+    <div id="clientView">
+      <div class="client-banner no-print">
+        <div>
+          <strong>Client Order Portal:</strong> Select your transaction type, pick NGX securities, enter quantities, and submit your mandate directly to Regency Assets Management Limited.
+        </div>
+        <button type="button" class="btn btn-accent" id="btnSubmitMandate">Submit Mandate</button>
+      </div>
+      <div id="submitSuccessToast" class="toast-success hidden no-print"></div>
+
+    <!-- Main Printable Mandate Form -->
+    <main class="mandate-document card" id="mandateDocument">
+      <!-- Document Header -->
+      <div class="doc-header">
+        <div class="doc-brand">
+          <img src="logo.png" alt="Regency Assets Management Limited" class="doc-logo" />
+          <div>
+            <div class="doc-company">REGENCY ASSETS MANAGEMENT LIMITED</div>
+            <div class="doc-eyebrow">CLIENT EXECUTION MANDATE</div>
+            <h2 class="doc-title">STOCKBROKING <span id="mandateTypeBadge" class="type-badge buy">PURCHASE</span> MANDATE FORM</h2>
+          </div>
+        </div>
+        <div class="doc-meta">
+          <div class="meta-row">
+            <label for="mandateRef">Mandate Ref:</label>
+            <input type="text" id="mandateRef" class="inline-input" />
+          </div>
+          <div class="meta-row">
+            <label for="mandateDate">Date:</label>
+            <input type="date" id="mandateDate" class="inline-input" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Transaction Type & Order Terms -->
+      <section class="form-section">
+        <div class="section-label">Transaction &amp; Order Details</div>
+        <div class="grid-4">
+          <div class="field">
+            <label for="txType">Transaction Type</label>
+            <select id="txType">
+              <option value="BUY">Purchase (Buy)</option>
+              <option value="SELL">Sale (Sell)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="orderType">Order Type</label>
+            <select id="orderType">
+              <option value="MARKET">Market Order (At Best)</option>
+              <option value="LIMIT">Limit Order</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="validity">Order Validity</label>
+            <select id="validity">
+              <option value="DAY">Good for Day</option>
+              <option value="GTC">Good Till Cancelled (GTC)</option>
+              <option value="GTD">Good Till Date</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="expiryDate">Expiry Date (if GTD)</label>
+            <input type="date" id="expiryDate" />
+          </div>
+        </div>
+      </section>
+
+      <!-- Client Details -->
+      <section class="form-section">
+        <div class="section-label">Client Information</div>
+        <div class="grid-3">
+          <div class="field">
+            <label for="clientName">Client Full Name / Corporate Name <span style="color:#dc2626">*</span></label>
+            <input type="text" id="clientName" required placeholder="e.g. Adebayo Oluwaseun" />
+          </div>
+          <div class="field">
+            <label for="cscsNumber">CSCS Account Number</label>
+            <input type="text" id="cscsNumber" placeholder="e.g. 1029384756" />
+          </div>
+          <div class="field">
+            <label for="chnNumber">CHN (Clearing House No.)</label>
+            <input type="text" id="chnNumber" placeholder="e.g. C1234567" />
+          </div>
+          <div class="field">
+            <label for="clientPhone">Phone Number <span style="color:#dc2626">*</span></label>
+            <input type="tel" id="clientPhone" required placeholder="e.g. +234 803 000 0000" />
+          </div>
+          <div class="field">
+            <label for="clientEmail">Email Address <span style="color:#dc2626">*</span></label>
+            <input type="email" id="clientEmail" required placeholder="client@example.com" />
+          </div>
+          <div class="field">
+            <label for="bankAccount">Settlement Bank / Account No.</label>
+            <input type="text" id="bankAccount" placeholder="Bank Name - 0123456789" />
+          </div>
+        </div>
+      </section>
+
+      <!-- Stock Line Items -->
+      <section class="form-section">
+        <div class="section-header-row">
+          <div class="section-label">Securities / Order Schedule</div>
+          <button type="button" class="btn btn-secondary btn-sm no-print" id="btnAddRow">+ Add Security</button>
+        </div>
+
+        <div class="table-wrap">
+          <table class="order-table" id="orderTable">
+            <thead>
+              <tr>
+                <th style="width: 40px;">#</th>
+                <th style="width: 170px;">NGX Symbol</th>
+                <th>Security Name</th>
+                <th style="width: 130px;" class="num">Quantity (Units)</th>
+                <th style="width: 130px;" class="num">Price (₦)</th>
+                <th style="width: 160px;" class="num">Consideration (₦)</th>
+                <th style="width: 48px;" class="no-print"></th>
+              </tr>
+            </thead>
+            <tbody id="orderBody">
+              <!-- Rows injected by JS -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Brokerage & Statutory Charges Breakdown -->
+      <section class="form-section summary-grid">
+        <div class="notes-box">
+          <label for="mandateNotes">Special Instructions / Remarks</label>
+          <textarea id="mandateNotes" rows="5" placeholder="Enter any specific execution instructions, price limits, or settlement notes..."></textarea>
+          <div class="declaration">
+            <strong>Client Authorization:</strong> I/We hereby authorize the Broker to execute the above securities transaction(s) on the Nigerian Exchange (NGX) subject to the rules of NGX, SEC, and CSCS, and agree to the applicable brokerage and statutory charges.
+          </div>
+        </div>
+
+        <div class="totals-box">
+          <div class="totals-title">Consideration &amp; Statutory Charges</div>
+          <div class="total-row">
+            <span>Gross Consideration</span>
+            <strong id="valConsideration">₦0.00</strong>
+          </div>
+          <div class="total-row">
+            <span>Brokerage Commission (<span id="lblBrokerageRate">1.35</span>%)</span>
+            <span id="valBrokerage">₦0.00</span>
+          </div>
+          <div class="total-row">
+            <span>SEC Fee (<span id="lblSecRate">0.30</span>%)</span>
+            <span id="valSec">₦0.00</span>
+          </div>
+          <div class="total-row">
+            <span>NGX Transaction Fee (<span id="lblNgxRate">0.00</span>%)</span>
+            <span id="valNgx">₦0.00</span>
+          </div>
+          <div class="total-row">
+            <span>CSCS Fee (<span id="lblCscsRate">0.00</span>%)</span>
+            <span id="valCscs">₦0.00</span>
+          </div>
+          <div class="total-row">
+            <span>Stamp Duty (<span id="lblStampRate">0.08</span>%)</span>
+            <span id="valStamp">₦0.00</span>
+          </div>
+          <div class="total-row">
+            <span>VAT on Brokerage (<span id="lblVatRate">7.50</span>%)</span>
+            <span id="valVat">₦0.00</span>
+          </div>
+          <div class="total-row subtotal">
+            <span>Total Charges &amp; Deductions</span>
+            <strong id="valTotalCharges">₦0.00</strong>
+          </div>
+          <div class="total-row grand-total">
+            <span id="lblNetAmount">Net Amount Payable</span>
+            <strong id="valNetAmount">₦0.00</strong>
+          </div>
+        </div>
+      </section>
+
+      <!-- Client Agreement & Indemnity (visible on print & screen) -->
+      <section class="indemnity-box">
+        <div class="section-label">Client Agreement &amp; Indemnity</div>
+        <p class="indemnity-text">
+          I/We hereby confirm that the above order is authorized by me/us, and I/we agree to indemnify and hold
+          <strong>Regency Assets Management Limited</strong> harmless against any losses, claims, or liabilities
+          arising from executing this mandate in accordance with NGX, NASD, SEC, and CSCS rules.
+        </p>
+        <div class="indemnity-choice">
+          <span class="indemnity-question">Do you agree to the terms &amp; indemnity above?</span>
+          <label class="radio-pill">
+            <input type="radio" name="indemnityAgree" value="YES" id="indemnityYes" />
+            <span>Yes, I Agree</span>
+          </label>
+          <label class="radio-pill">
+            <input type="radio" name="indemnityAgree" value="NO" id="indemnityNo" />
+            <span>No, I Do Not Agree</span>
+          </label>
+        </div>
+      </section>
+    </main>
+    </div><!-- /#clientView -->
+
+    <!-- ==================== ADMIN DASHBOARD VIEW ==================== -->
+    <div id="adminView" class="hidden no-print">
+      <!-- Admin KPIs -->
+      <section class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-label">Total Mandates</div>
+          <div class="kpi-value" id="kpiTotal">0</div>
+        </div>
+        <div class="kpi-card kpi-warn">
+          <div class="kpi-label">Pending Review</div>
+          <div class="kpi-value" id="kpiPending">0</div>
+        </div>
+        <div class="kpi-card kpi-ok">
+          <div class="kpi-label">Approved / Executed</div>
+          <div class="kpi-value" id="kpiApproved">0</div>
+        </div>
+        <div class="kpi-card kpi-primary">
+          <div class="kpi-label">Total Gross Volume</div>
+          <div class="kpi-value" id="kpiVolume">₦0.00</div>
+        </div>
+      </section>
+
+      <!-- Admin NGX Pricelist & Fee Controls -->
+      <section class="card pricelist-card">
+        <div class="card-header-row">
+          <div>
+            <h2>NGX Daily Pricelist &amp; Fee Controls</h2>
+            <p class="muted">Upload the daily NGX pricelist (`.csv` or `.txt`) and configure brokerage/statutory rates. Changes sync immediately to the Client Portal.</p>
+          </div>
+          <div class="pricelist-actions">
+            <input type="email" id="adminDeliveryEmail" class="filter-input" placeholder="Dealing Desk Email (e.g. dealing@regencyassets.com)" style="min-width:250px;" />
+            <label class="btn btn-secondary file-label" for="pricelistFile">
+              Upload NGX Pricelist (CSV)
+              <input type="file" id="pricelistFile" accept=".csv,.txt" hidden />
+            </label>
+            <button type="button" class="btn btn-ghost" id="btnDownloadSample">Download Sample CSV</button>
+            <button type="button" class="btn btn-primary" id="btnFeeSettings">Fee Schedule</button>
+            <button type="button" class="btn btn-secondary" id="btnChangeAdminPass">Change Password</button>
+            <button type="button" class="btn btn-secondary" id="btnLockAdmin">Lock Admin</button>
+          </div>
+        </div>
+        <div class="pricelist-status" id="pricelistStatus">
+          <span class="status-dot active"></span>
+          <span id="pricelistStatusText">Loaded 80+ NGX-listed equities across all sectors. Upload your daily NGX CSV anytime to update prices.</span>
+        </div>
+      </section>
+
+      <!-- Admin Mandates Table -->
+      <section class="card">
+        <div class="card-header-row" style="margin-bottom: 14px;">
+          <div>
+            <h2 style="margin:0;font-size:16px;">Submitted Client Mandates</h2>
+            <p class="muted">Review, approve, execute, or export mandates submitted from the Client Portal.</p>
+          </div>
+          <div class="admin-filters">
+            <input type="text" id="adminSearch" class="filter-input" placeholder="Search client, CSCS, or ref..." />
+            <select id="adminStatusFilter" class="filter-select">
+              <option value="ALL">All Statuses</option>
+              <option value="PENDING">Pending</option>
+              <option value="APPROVED">Approved</option>
+              <option value="EXECUTED">Executed</option>
+              <option value="REJECTED">Rejected</option>
+            </select>
+            <select id="adminTypeFilter" class="filter-select">
+              <option value="ALL">All Types</option>
+              <option value="BUY">Purchase (Buy)</option>
+              <option value="SELL">Sale (Sell)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table class="order-table" id="adminTable">
+            <thead>
+              <tr>
+                <th>Mandate Ref</th>
+                <th>Date</th>
+                <th>Client Name</th>
+                <th>CSCS No.</th>
+                <th>Type</th>
+                <th class="num">Gross (₦)</th>
+                <th class="num">Total Charges (₦)</th>
+                <th class="num">Net Amount (₦)</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="adminTableBody">
+              <tr><td colspan="10" style="text-align:center;color:var(--muted);padding:24px;">No mandates submitted yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div><!-- /#adminView -->
+  </div>
+
+  <!-- Fee Schedule Settings Modal -->
+  <div class="modal-backdrop hidden no-print" id="feeModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Statutory &amp; Brokerage Fee Schedule (%)</h3>
+        <button type="button" class="btn-close" id="btnCloseFeeModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="muted">Adjust percentage rates for Purchase (Buy) and Sale (Sell) transactions. Changes apply immediately.</p>
+        <div class="fee-grid">
+          <div class="fee-col-head">Fee Component</div>
+          <div class="fee-col-head">Buy (%)</div>
+          <div class="fee-col-head">Sell (%)</div>
+
+          <label>Brokerage Commission</label>
+          <input type="number" step="0.001" min="0" id="feeBuyBrokerage" />
+          <input type="number" step="0.001" min="0" id="feeSellBrokerage" />
+
+          <label>SEC Fee</label>
+          <input type="number" step="0.001" min="0" id="feeBuySec" />
+          <input type="number" step="0.001" min="0" id="feeSellSec" />
+
+          <label>NGX Transaction Fee</label>
+          <input type="number" step="0.001" min="0" id="feeBuyNgx" />
+          <input type="number" step="0.001" min="0" id="feeSellNgx" />
+
+          <label>CSCS Fee</label>
+          <input type="number" step="0.001" min="0" id="feeBuyCscs" />
+          <input type="number" step="0.001" min="0" id="feeSellCscs" />
+
+          <label>Stamp Duty</label>
+          <input type="number" step="0.001" min="0" id="feeBuyStamp" />
+          <input type="number" step="0.001" min="0" id="feeSellStamp" />
+
+          <label>VAT (on Brokerage)</label>
+          <input type="number" step="0.01" min="0" id="feeBuyVat" />
+          <input type="number" step="0.01" min="0" id="feeSellVat" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" id="btnResetFees">Reset Defaults</button>
+        <button type="button" class="btn btn-primary" id="btnSaveFees">Apply Rates</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin Login Modal -->
+  <div class="modal-backdrop hidden no-print" id="adminLoginModal">
+    <div class="modal" style="max-width: 400px;">
+      <div class="modal-header">
+        <h3>Admin Dashboard Login</h3>
+        <button type="button" class="btn-close" id="btnCloseLoginModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="muted" style="margin-bottom: 12px;">Enter the Regency Assets Management Limited admin password to access the dashboard.</p>
+        <div class="field">
+          <label for="adminPasswordInput">Admin Password</label>
+          <input type="password" id="adminPasswordInput" placeholder="Enter password" />
+        </div>
+        <div id="adminLoginError" class="muted" style="color:#dc2626;margin-top:8px;display:none;">Incorrect password. Please try again.</div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="btnCancelLogin">Cancel</button>
+        <button type="button" class="btn btn-primary" id="btnSubmitLogin">Unlock Dashboard</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Datalist for NGX Symbols -->
+  <datalist id="ngxSymbolsList"></datalist>
+
+  <script src="app.js"></script>
+</body>
+</html>
