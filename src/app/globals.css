@@ -12,10 +12,10 @@ body::before {
   position: fixed;
   inset: 0;
   background-image: url("/logo.png");
-  background-repeat: no-repeat;
-  background-position: center center;
-  background-size: 460px auto;
-  opacity: 0.05;
+  background-repeat: repeat;
+  background-position: 0 0;
+  background-size: 90px auto;
+  opacity: 0.14;
   pointer-events: none;
   z-index: 0;
 }

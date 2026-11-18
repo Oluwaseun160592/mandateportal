@@ -50,6 +50,7 @@ export default function MandatePortal() {
   const [buyRows, setBuyRows] = useState([{ symbol: '', name: '', qty: '', price: '' }]);
   const [toast, setToast] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [showReviewModal, setShowReviewModal] = useState(false);
 
   // Admin filters
   const [search, setSearch] = useState('');
@@ -92,7 +93,7 @@ export default function MandatePortal() {
       const e = localStorage.getItem('ngx_delivery_email_v1');
       if (e) setDeliveryEmail(e);
       if (sessionStorage.getItem('ngx_admin_auth') === '1') setIsAdminAuth(true);
-    } catch (_) {}
+    } catch (_) { }
     syncLivePrices();
   }, []);
 
@@ -275,7 +276,7 @@ export default function MandatePortal() {
     URL.revokeObjectURL(url);
   };
 
-  const handleSubmitMandate = async () => {
+  const handleReviewMandate = () => {
     if (!txType) return alert('Please select a Transaction Type (Purchase or Sale).');
     if (!orderType) return alert('Please select an Order Type.');
     if (!expiryDate) return alert('Please select an Expiry Date.');
@@ -291,7 +292,12 @@ export default function MandatePortal() {
     if (indemnity !== 'YES') {
       return alert('Please select "Yes, I Agree" on the Client Agreement & Indemnity.');
     }
+    setShowReviewModal(true);
+  };
 
+  const confirmAndSubmitMandate = async () => {
+    const d = buildSnapshot();
+    setShowReviewModal(false);
     setSubmitting(true);
     const record = { ...d, status: 'PENDING', submittedAt: new Date().toISOString() };
     const updated = [record, ...mandates];
@@ -437,17 +443,8 @@ export default function MandatePortal() {
           <div className="no-print flex flex-wrap items-center justify-between gap-3 bg-gradient-to-r from-blue-700 to-sky-600 text-white px-5 py-3.5 rounded-xl mb-4 shadow-sm">
             <p className="text-sm">
               <strong>Client Order Portal:</strong> Fill in your details, select NGX/NASD securities,
-              and submit your mandate directly to Regency Assets Management Limited.
+              and review &amp; submit your mandate at the bottom of the form.
             </p>
-            <button
-              type="button"
-              disabled={submitting || indemnity !== 'YES'}
-              onClick={handleSubmitMandate}
-              title={indemnity !== 'YES' ? 'Please select "Yes, I Agree" on the Indemnity section first' : ''}
-              className="px-5 py-2.5 rounded-lg text-sm font-bold bg-amber-500 hover:bg-amber-600 text-white shadow cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {submitting ? 'Submitting...' : 'Submit Mandate'}
-            </button>
           </div>
 
           {toast && (
@@ -471,11 +468,10 @@ export default function MandatePortal() {
                   <h2 className="text-xl font-extrabold text-slate-900 mt-0.5">
                     STOCKBROKING{' '}
                     <span
-                      className={`px-2 py-0.5 rounded text-sm ${
-                        txType === 'BUY'
+                      className={`px-2 py-0.5 rounded text-sm ${txType === 'BUY'
                           ? 'bg-emerald-100 text-emerald-800'
                           : 'bg-rose-100 text-rose-800'
-                      }`}
+                        }`}
                     >
                       {txType === 'BUY' ? 'PURCHASE' : 'SALE'}
                     </span>{' '}
@@ -858,11 +854,10 @@ export default function MandatePortal() {
                       Total Purchase Cost: <strong>{formatNaira(reinvestCalc.totalCost)}</strong>
                     </span>
                     <span
-                      className={`font-bold px-2.5 py-1 rounded ${
-                        reinvestCalc.balance >= 0
+                      className={`font-bold px-2.5 py-1 rounded ${reinvestCalc.balance >= 0
                           ? 'bg-emerald-100 text-emerald-800'
                           : 'bg-rose-100 text-rose-800'
-                      }`}
+                        }`}
                     >
                       {reinvestCalc.balance >= 0
                         ? `Remaining Sale Proceeds: ${formatNaira(reinvestCalc.balance)}`
@@ -970,6 +965,18 @@ export default function MandatePortal() {
                 </label>
               </div>
             </section>
+
+            <div className="no-print mt-5 flex justify-end">
+              <button
+                type="button"
+                disabled={submitting || indemnity !== 'YES'}
+                onClick={handleReviewMandate}
+                title={indemnity !== 'YES' ? 'Please select "Yes, I Agree" on the Indemnity section first' : ''}
+                className="px-6 py-3 rounded-xl text-sm font-bold bg-amber-500 hover:bg-amber-600 text-white shadow-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {submitting ? 'Submitting...' : 'Review & Submit Mandate'}
+              </button>
+            </div>
 
             <footer className="mt-6 pt-4 border-t border-slate-200 text-center text-[11px] font-bold tracking-wide text-slate-600 uppercase">
               REGENCY ASSETS MANAGEMENT LIMITED IS LICENSED AND REGULATED BY SECURITIES AND EXCHANGE COMMISSION (SEC) NIGERIA
@@ -1277,6 +1284,94 @@ export default function MandatePortal() {
                 className="px-4 py-1.5 text-xs font-semibold bg-blue-700 text-white rounded-md cursor-pointer"
               >
                 Save Rates
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Review & Confirm Modal */}
+      {showReviewModal && (
+        <div className="fixed inset-0 bg-slate-900/60 flex items-center justify-center p-4 z-50 no-print">
+          <div className="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <h3 className="text-lg font-extrabold text-slate-900 mb-1">
+              Double-Check Your Mandate
+            </h3>
+            <p className="text-xs text-slate-500 mb-4">
+              Please review all details carefully before final submission. Click &ldquo;Go Back &amp; Edit&rdquo; if you need to make any changes.
+            </p>
+
+            <div className="grid grid-cols-2 gap-2 text-xs bg-slate-50 p-3.5 rounded-lg border border-slate-200 mb-4">
+              <div><span className="text-slate-500">Mandate Ref:</span> <strong>{ref}</strong></div>
+              <div><span className="text-slate-500">Date:</span> <strong>{date}</strong></div>
+              <div><span className="text-slate-500">Transaction:</span> <strong>{txType === 'BUY' ? 'Purchase (Buy)' : 'Sale (Sell)'}</strong></div>
+              <div><span className="text-slate-500">Order Type:</span> <strong>{orderType}</strong></div>
+              <div><span className="text-slate-500">Validity:</span> <strong>{validity}</strong></div>
+              <div><span className="text-slate-500">Expiry Date:</span> <strong>{expiryDate}</strong></div>
+              <div><span className="text-slate-500">Client Name:</span> <strong>{clientName}</strong></div>
+              <div><span className="text-slate-500">CSCS No.:</span> <strong>{cscsNumber || 'N/A'}</strong></div>
+              <div><span className="text-slate-500">Phone:</span> <strong>{clientPhone}</strong></div>
+              <div><span className="text-slate-500">Email:</span> <strong>{clientEmail}</strong></div>
+            </div>
+
+            <div className="border border-slate-200 rounded-lg overflow-hidden mb-4">
+              <table className="w-full text-xs">
+                <thead className="bg-blue-700 text-white">
+                  <tr>
+                    <th className="p-2 text-left">Symbol</th>
+                    <th className="p-2 text-left">Security</th>
+                    <th className="p-2 text-right">Qty</th>
+                    <th className="p-2 text-right">Price (₦)</th>
+                    <th className="p-2 text-right">Consideration (₦)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows
+                    .filter((r) => r.symbol || parseFloat(r.qty) > 0)
+                    .map((r, i) => (
+                      <tr key={i} className="border-b border-slate-100">
+                        <td className="p-2 font-bold">{r.symbol}</td>
+                        <td className="p-2">{r.name}</td>
+                        <td className="p-2 text-right">{r.qty}</td>
+                        <td className="p-2 text-right">{Number(r.price || 0).toFixed(2)}</td>
+                        <td className="p-2 text-right font-semibold">
+                          {formatNaira((parseFloat(r.qty) || 0) * (parseFloat(r.price) || 0))}
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs space-y-1 mb-5">
+              <div className="flex justify-between">
+                <span>Gross Consideration</span>
+                <strong>{formatNaira(calc.gross)}</strong>
+              </div>
+              <div className="flex justify-between">
+                <span>Total Charges &amp; Deductions</span>
+                <strong>{formatNaira(calc.totalCharges)}</strong>
+              </div>
+              <div className="flex justify-between text-sm font-extrabold text-blue-800 pt-1 border-t border-blue-200">
+                <span>{txType === 'BUY' ? 'Net Amount Payable' : 'Net Proceeds Receivable'}</span>
+                <span>{formatNaira(calc.netAmount)}</span>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setShowReviewModal(false)}
+                className="px-4 py-2 text-xs font-semibold border border-slate-300 rounded-lg hover:bg-slate-50 cursor-pointer"
+              >
+                Go Back &amp; Edit
+              </button>
+              <button
+                type="button"
+                onClick={confirmAndSubmitMandate}
+                className="px-5 py-2 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg shadow cursor-pointer"
+              >
+                Confirm &amp; Submit Mandate
               </button>
             </div>
           </div>
