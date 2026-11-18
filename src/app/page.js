@@ -978,8 +978,11 @@ export default function MandatePortal() {
               </button>
             </div>
 
-            <footer className="mt-6 pt-4 border-t border-slate-200 text-center text-[11px] font-bold tracking-wide text-slate-600 uppercase">
-              REGENCY ASSETS MANAGEMENT LIMITED IS LICENSED AND REGULATED BY SECURITIES AND EXCHANGE COMMISSION (SEC) NIGERIA
+            <footer className="mt-6 pt-4 border-t border-slate-200 text-center text-[11px] font-bold tracking-wide text-slate-600 uppercase space-y-1">
+              <div>REGENCY ASSETS MANAGEMENT LIMITED IS LICENSED AND REGULATED BY SECURITIES AND EXCHANGE COMMISSION (SEC) NIGERIA</div>
+              <div className="text-[10px] font-semibold text-slate-500">
+                &copy; {new Date().getFullYear()} Regency Assets Management Limited. All Rights Reserved.
+              </div>
             </footer>
           </main>
         </div>
